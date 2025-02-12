@@ -2,42 +2,59 @@ pipeline {
     agent any
 
     environment {
-        AZURE_CREDENTIALS = credentials('azure-sp-credentials') // Use Jenkins Credentials ID
+        AZURE_CREDENTIALS = credentials('azure-sp-credentials') // Jenkins Credentials ID
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/pranaydakuri/Jenkins_repo.git' // Replace with your repo
+                git branch: 'main', url: 'https://github.com/pranaydakuri/Jenkins_repo.git' // Explicitly specifying branch
             }
         }
 
         stage('Setup Azure Login') {
             steps {
                 script {
-                    def creds = readJSON text: AZURE_CREDENTIALS
-                    sh """
-                        az login --service-principal -u ${creds.clientId} -p ${creds.clientSecret} --tenant ${creds.tenantId}
-                    """
+                    withCredentials([string(credentialsId: 'azure-sp-credentials', variable: 'AZURE_CREDENTIALS')]) {
+                        def creds = readJSON text: AZURE_CREDENTIALS
+                        sh """
+                            az login --service-principal -u ${creds.clientId} -p ${creds.clientSecret} --tenant ${creds.tenantId}
+                        """
+                    }
                 }
             }
         }
 
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                script {
+                    sh 'terraform init || exit 1' // Exit if init fails
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan -var="subscription_id=${creds.subscriptionId}" -var="client_id=${creds.clientId}" -var="client_secret=${creds.clientSecret}" -var="tenant_id=${creds.tenantId}" -out=tfplan'
+                script {
+                    withCredentials([string(credentialsId: 'azure-sp-credentials', variable: 'AZURE_CREDENTIALS')]) {
+                        def creds = readJSON text: AZURE_CREDENTIALS
+                        sh """
+                            terraform plan -var="subscription_id=${creds.subscriptionId}" \
+                                           -var="client_id=${creds.clientId}" \
+                                           -var="client_secret=${creds.clientSecret}" \
+                                           -var="tenant_id=${creds.tenantId}" \
+                                           -out=tfplan || exit 1
+                        """
+                    }
+                }
             }
         }
 
         stage('Terraform Apply') {
             steps {
-                sh 'terraform apply -auto-approve tfplan'
+                script {
+                    sh 'terraform apply -auto-approve tfplan || exit 1' // Exit if apply fails
+                }
             }
         }
     }
