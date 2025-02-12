@@ -20,15 +20,16 @@ pipeline {
         }
  
         stage('Terraform Plan') {
-            steps {
-                bat 'terraform plan'
-            }
-        }
- 
-        stage('Terraform Apply') {
-            steps {
-                bat 'terraform apply -auto-approve'
-            }
-        }
+    steps {
+        bat 'C:\\Terraform\\terraform.exe plan'
+    }
+}
+
+stage('Terraform Apply') {
+    steps {
+        bat 'C:\\Terraform\\terraform.exe apply -auto-approve'
+    }
+}
+        
     }
 }
