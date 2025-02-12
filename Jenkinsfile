@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/your-repo.git' // Replace with your repo
+                git 'https://github.com/Jenkins_repo.git' // Replace with your repo
             }
         }
 
