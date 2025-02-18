@@ -12,28 +12,6 @@ variable "client_id" {}
 variable "client_secret" {}
 variable "tenant_id" {}
 
-# Create a resource group for the storage account
-resource "azurerm_resource_group" "state_rg" {
-  name     = "tfstate-rg"
-  location = "East US"
-}
-
-# Create a storage account for Terraform state
-resource "azurerm_storage_account" "tfstate_storage" {
-  name                     = "tfstatestorage8247"  # Change this to a unique name
-  resource_group_name      = azurerm_resource_group.state_rg.name
-  location                 = azurerm_resource_group.state_rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-}
-
-# Create a container in the storage account for the state file
-resource "azurerm_storage_container" "tfstate_container" {
-  name                  = "tfstate"
-  storage_account_name  = azurerm_storage_account.tfstate_storage.name
-  container_access_type = "private"
-}
-
 # Configure the Terraform backend to use Azure Storage
 terraform {
   backend "azurerm" {
@@ -43,7 +21,6 @@ terraform {
     key                  = "KEY"
   }
 }
-
 
 resource "azurerm_resource_group" "example" {
   name     = "example"
