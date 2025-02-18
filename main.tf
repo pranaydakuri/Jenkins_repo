@@ -1,7 +1,16 @@
-# Configure the Azure provider
 provider "azurerm" {
   features {}
+
+  subscription_id = var.subscription_id
+  client_id       = var.client_id
+  client_secret   = var.client_secret
+  tenant_id       = var.tenant_id
 }
+
+variable "subscription_id" {}
+variable "client_id" {}
+variable "client_secret" {}
+variable "tenant_id" {}
 
 # Create a resource group for the storage account
 resource "azurerm_resource_group" "state_rg" {
@@ -35,7 +44,7 @@ terraform {
   }
 }
 
-# Your existing resources
+
 resource "azurerm_resource_group" "example" {
   name     = "example"
   location = "East US"
@@ -71,29 +80,28 @@ resource "azurerm_linux_virtual_machine" "VM1" {
   name                  = "VM1"
   resource_group_name   = azurerm_resource_group.example.name
   location              = azurerm_resource_group.example.location
-  size                  = "Standard_B1s"
+  size                  = "Standard_B1s" # Choose the VM size suitable for your workload
   admin_username        = "pranayvm"
   admin_password        = "P@ssw0rd1234!" # Replace with a strong password
-  disable_password_authentication = false
+  disable_password_authentication = false # Allow password authentication
   network_interface_ids = [azurerm_network_interface.NF.id]
 
-  os_disk {
+os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
     name                 = "osdisk1"
-    disk_size_gb         = 30
+    disk_size_gb         = 30 # Adjust the disk size as needed
   }
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-focal"
-    sku       = "20_04-lts-gen2"
-    version   = "latest"
-  }
+  publisher = "Canonical"
+  offer     = "0001-com-ubuntu-server-focal"
+  sku       = "20_04-lts-gen2"
+  version   = "latest"
+}
 
   computer_name = "linuxvm"
 }
-
 output "vm_public_ip" {
   value = azurerm_network_interface.NF.ip_configuration[0].private_ip_address
 }
