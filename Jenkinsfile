@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Terraform Init') {
             steps {
-                bat 'C:\\Terraform\\terraform.exe init'
+                bat 'C:\\Terraform\\terraform.exe init -force-copy'
             }
         }
         stage('Terraform Plan') {
